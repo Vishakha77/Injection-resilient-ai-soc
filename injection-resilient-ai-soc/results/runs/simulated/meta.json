@@ -1,0 +1,9 @@
+{
+ "n_test_flows": 1770,
+ "n_malicious": 770,
+ "n_injected": 328,
+ "n_adaptive": 65,
+ "n_benign": 1000,
+ "n_hard_negative": 133,
+ "backend": "simulated"
+}

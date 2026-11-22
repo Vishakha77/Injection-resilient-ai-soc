@@ -1,0 +1,25 @@
+# ---------------------------------------------------------------------------
+# AI-SOC prototype rule set.
+# Section 1: ordinary attack signatures (stand-in for ET Open / ET Pro).
+# Section 2: NOVEL - prompt-injection payloads in network fields are treated as
+#            attack indicators ("injection as an indicator").
+# ---------------------------------------------------------------------------
+
+# ---- Section 1: web attacks ----
+alert http any any -> $HOME_NET any (msg:"AISOC WEB SQLi UNION SELECT"; flow:established,to_server; http.uri; content:"UNION"; nocase; content:"SELECT"; nocase; distance:0; classtype:web-application-attack; sid:1100001; rev:1;)
+alert http any any -> $HOME_NET any (msg:"AISOC WEB SQLi boolean/time based"; flow:established,to_server; http.uri; pcre:"/(%27|')\s*(%20)*(OR|AND)(%20|\s)|SLEEP\(/i"; classtype:web-application-attack; sid:1100002; rev:1;)
+alert http any any -> $HOME_NET any (msg:"AISOC SCANNER sqlmap user-agent"; flow:established,to_server; http.user_agent; content:"sqlmap"; nocase; classtype:web-application-attack; sid:1100003; rev:1;)
+alert http any any -> $HOME_NET any (msg:"AISOC WEB path traversal"; flow:established,to_server; http.uri; pcre:"/\.\.(\/|%2f)|etc\/(passwd|shadow)/i"; classtype:web-application-attack; sid:1100004; rev:1;)
+alert http any any -> $HOME_NET any (msg:"AISOC WEB XSS attempt"; flow:established,to_server; http.uri; pcre:"/<script|%3Cscript|onerror=/i"; classtype:web-application-attack; sid:1100005; rev:1;)
+alert http any any -> $HOME_NET any (msg:"AISOC WEB command injection"; flow:established,to_server; http.uri; pcre:"/(;|%7C|\|)\s*(cat|wget|curl|bash|sh)(%20|\s)/i"; classtype:web-application-attack; sid:1100006; rev:1;)
+alert http any any -> $HOME_NET any (msg:"AISOC WEB login brute force"; flow:established,to_server; http.method; content:"POST"; http.uri; content:"/login"; threshold:type threshold, track by_src, count 5, seconds 60; classtype:attempted-user; sid:1100007; rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"AISOC SCAN TCP SYN sweep"; flags:S,12; threshold:type threshold, track by_src, count 15, seconds 10; classtype:attempted-recon; sid:1100008; rev:1;)
+# Weak on purpose: real-world tunnelling/beacons often evade signatures; Judge A must help.
+alert dns any any -> any any (msg:"AISOC DNS very long query label"; dns.query; pcre:"/[a-f0-9]{48,}/"; classtype:bad-unknown; sid:1100009; rev:1;)
+
+# ---- Section 2: prompt injection in traffic as an indicator ----
+alert http any any -> $HOME_NET any (msg:"AISOC LLM-INJECTION instruction override in HTTP headers"; flow:established,to_server; http.header; pcre:"/(ignore|disregard|forget|overr[i1]de)\s*(all\s*)?(previous|prior|earlier|pr[i1]or|pr3vious)?\s*(instructions?|rules|guidance|instructi0ns)/i"; classtype:policy-violation; sid:1200001; rev:1;)
+alert http any any -> $HOME_NET any (msg:"AISOC LLM-INJECTION verdict manipulation in HTTP"; flow:established,to_server; http.header; pcre:"/(classify|mark|label|respond|output|verdict)[^\r\n]{0,30}(benign|safe|false\s*positive)/i"; classtype:policy-violation; sid:1200002; rev:1;)
+alert http any any -> $HOME_NET any (msg:"AISOC LLM-INJECTION addressed to AI/assistant/model"; flow:established,to_server; http.header; pcre:"/(AI\s*(analyst|triage)|assistant|language\s*model|<<SYS>>|\[SOC ADMIN\])/i"; classtype:policy-violation; sid:1200003; rev:1;)
+alert http any any -> $HOME_NET any (msg:"AISOC LLM-INJECTION instruction in URI"; flow:established,to_server; http.uri; pcre:"/(ignore|disregard|forget)\+(all\+)?(previous|prior|earlier)\+(instructions|rules)|(classify|mark|label)\+as\+(benign|safe)/i"; classtype:policy-violation; sid:1200004; rev:1;)
+alert dns any any -> any any (msg:"AISOC LLM-INJECTION instruction words in DNS query"; dns.query; pcre:"/(ignore|disregard|forget)-[a-z-]*(instructions|guidance|alert)|(label|mark|verdict|classify)-(as-)?(benign|safe)|suppress-alert|do-not-alert/i"; classtype:policy-violation; sid:1200005; rev:1;)

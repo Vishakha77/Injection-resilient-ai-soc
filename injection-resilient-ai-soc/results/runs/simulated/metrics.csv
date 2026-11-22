@@ -1,0 +1,8 @@
+config,detection_rate_%,attack_success_injected_%,attack_success_adaptive_%,false_positive_rate_%,fp_on_hard_negatives_%,escalated_%
+Suricata rules only,32.5,68.9,50.8,0.0,0.0,0.0
+Judge A only (flow ML),99.7,0.6,3.1,0.5,2.3,0.0
+LLM naive prompt,68.7,73.5,58.5,0.0,0.0,0.0
+LLM + provenance prompt,75.5,57.6,38.5,0.0,0.0,0.0
+LLM prov + Judge C,99.2,1.8,3.1,0.9,6.8,0.0
+LLM prov + Judge A,100.0,0.0,0.0,0.5,2.3,11.0
+FULL: LLM prov + A + C,100.0,0.0,0.0,1.4,9.0,0.6

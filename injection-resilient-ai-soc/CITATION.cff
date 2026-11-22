@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Injection-Resilient AI-SOC: Cross-Model Verification of LLM Alert Triage over Suricata"
+authors:
+  - family-names: Raj
+    given-names: Vishakha
+version: 0.1.0
+date-released: 2026-11-22
+license: MIT
+repository-code: "https://github.com/Vishakha77/injection-resilient-ai-soc"
+keywords:
+  - prompt injection
+  - LLM security
+  - intrusion detection
+  - Suricata
+  - security operations center
